@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Bateria Digital</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='55' r='40' fill='%23b5502c'/%3E%3Ccircle cx='50' cy='55' r='30' fill='%23f2d879'/%3E%3Ccircle cx='30' cy='25' r='16' fill='%23d4af37'/%3E%3Ccircle cx='72' cy='30' r='14' fill='%23d4af37'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #15100c;
+    --panel: #1f1712;
+    --wood-1: #b5502c;
+    --wood-2: #7a2f14;
+    --gold-1: #f2d879;
+    --gold-2: #d4af37;
+    --chrome: #c9ccd1;
+    --accent: #ffb454;
+    --text: #f1e9df;
+    --text-dim: #9a8f82;
+  }
+
+  *{ box-sizing: border-box; }
+
+  html, body{
+    margin:0;
+    padding:0;
+    background: radial-gradient(ellipse at 50% 0%, #241a12 0%, var(--bg) 60%);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .stage-light{
+    position: fixed;
+    top: -20%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 140%;
+    height: 60%;
+    background: radial-gradient(ellipse, rgba(255,180,84,0.10) 0%, rgba(255,180,84,0) 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  header{
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 48px 20px 20px;
+  }
+
+  h1{
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.8rem, 8vw, 4.5rem);
+    letter-spacing: 0.08em;
+    margin: 0;
+    line-height: 0.95;
+    background: linear-gradient(180deg, var(--gold-1), var(--gold-2) 70%, var(--wood-1));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .subtitle{
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-top: 8px;
+  }
+
+  .hint{
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    margin-top: 6px;
+  }
+
+  .hint strong{ color: var(--accent); font-weight: 600; }
+
+  .volume-row{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 18px;
+  }
+
+  .volume-row label{
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .volume-row input[type="range"]{
+    width: 140px;
+    accent-color: var(--accent);
+  }
+
+  main{
+    position: relative;
+    z-index: 1;
+    max-width: 720px;
+    margin: 40px auto 80px;
+    padding: 0 20px;
+  }
+
+  /* ---- DESKTOP: posicionamento em leque, imitando a vista de cima real da bateria ---- */
+  .kit{
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+  }
+
+  /* barra do rack que sustenta os toms sobre o bumbo, dando sensacao de "corpo" conectado */
+  .rack-bar{
+    position: absolute;
+    left: 27%;
+    top: 16%;
+    width: 44%;
+    height: 6%;
+    background: linear-gradient(180deg, #e4e6e9, var(--chrome) 45%, #6d7075 100%);
+    border-radius: 6px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+    z-index: 0;
+  }
+
+  /* corpo/casco atras de cada pad: madeira para tambores, cromado para caixa, pino de suporte para pratos */
+  .shell{
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .shell.drum-shell{
+    transform: scale(1.16);
+    background: linear-gradient(160deg, var(--wood-1), var(--wood-2) 55%, #3d1608 100%);
+    box-shadow: 0 14px 24px rgba(0,0,0,0.55), inset 0 0 0 6px rgba(0,0,0,0.35);
+  }
+
+  .shell.snare-shell{
+    transform: scale(1.16);
+    background: linear-gradient(160deg, #dcdcdc, var(--chrome) 55%, #52555a 100%);
+    box-shadow: 0 14px 24px rgba(0,0,0,0.5), inset 0 0 0 6px rgba(0,0,0,0.3);
+  }
+
+  .shell.stand-pole{
+    transform: scale(0.16) translateY(220%);
+    background: radial-gradient(circle, #d6d9dd, #4c4f54 75%);
+    box-shadow: 0 6px 10px rgba(0,0,0,0.55);
+  }
+
+  .pad{
+    position: absolute;
+    z-index: 1;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: none;
+    user-select: none;
+    transition: transform 0.06s ease-out, box-shadow 0.15s ease-out, filter 0.15s ease-out;
+    box-shadow: inset 0 0 0 3px rgba(0,0,0,0.25), 0 6px 14px rgba(0,0,0,0.45);
+  }
+
+  .pad .key{
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    letter-spacing: 0.05em;
+  }
+
+  .pad .label{
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0.75;
+  }
+
+  .pad.cymbal{
+    background: radial-gradient(circle at 35% 30%, var(--gold-1), var(--gold-2) 55%, #8a6a1e 100%);
+    color: #2b2005;
+  }
+  .pad.cymbal .label{ color: #3a2c08; }
+
+  .pad.drum{
+    background: radial-gradient(circle at 35% 30%, var(--wood-1), var(--wood-2) 70%, #3d1608 100%);
+  }
+
+  .pad.snare{ background: radial-gradient(circle at 35% 30%, #e9e4da, var(--chrome) 55%, #6d7075 100%); color:#20211f; }
+  .pad.snare .label{ color:#3a3a38; }
+
+  .pad.active{
+    filter: brightness(1.35);
+    box-shadow: inset 0 0 0 3px rgba(255,255,255,0.35), 0 0 26px 4px var(--accent);
+    transform: scale(0.94);
+  }
+
+  /* posições em % baseadas na foto "bateria superior.jpg" (vista de cima, formato em leque) */
+  .p-hihat{  left: 0%;   top: 40%;  width: 17%; height: 32%; }
+  .p-crashL{ left: 4%;   top: 4%;   width: 19%; height: 34%; }
+  .p-tom1{   left: 29%;  top: 0%;   width: 19%; height: 34%; }
+  .p-tom1b{  left: 50%;  top: 0%;   width: 19%; height: 34%; }
+  .p-crashR{ left: 78%;  top: 6%;   width: 19%; height: 34%; }
+
+  .p-snare{  left: 15%;  top: 54%;  width: 22%; height: 36%; }
+  .p-kick{   left: 40%;  top: 60%;  width: 22%; height: 38%; }
+  .p-floor{  left: 65%;  top: 52%;  width: 22%; height: 36%; }
+
+  footer{
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 0.75rem;
+    padding-bottom: 40px;
+    letter-spacing: 0.05em;
+  }
+
+  /* ---- MOBILE: coluna vertical, pads grandes para toque ---- */
+  @media (max-width: 640px){
+    header{ padding-top: 32px; }
+    main{ margin-top: 24px; }
+
+    .kit{
+      position: static;
+      aspect-ratio: unset;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .rack-bar, .shell{ display: none; }
+
+    .pad{
+      position: static;
+      width: 100% !important;
+      height: 76px !important;
+      border-radius: 20px;
+      flex-direction: row;
+      justify-content: flex-start;
+      padding: 0 24px;
+      gap: 16px;
+    }
+
+    .pad .key{
+      font-size: 1.5rem;
+      width: 40px;
+      text-align: center;
+    }
+
+    .pad .label{ font-size: 0.75rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stage-light"></div>
+
+<header>
+  <h1>Bateria Digital</h1>
+  <div class="subtitle">Toque no pad ou use o teclado</div>
+  <div class="hint">Zoeira permitida &mdash; feito para o <strong>GitHub Pages</strong></div>
+  <div class="volume-row">
+    <label for="volume">Volume</label>
+    <input type="range" id="volume" min="0" max="1" step="0.01" value="0.8">
+  </div>
+</header>
+
+<main>
+  <div class="kit" id="kit">
+    <div class="rack-bar"></div>
+
+    <div class="shell stand-pole p-crashL"></div>
+    <button class="pad cymbal p-crashL" data-sound="crash" data-key="Q">
+      <span class="key">Q</span><span class="label">Crash Esq.</span>
+    </button>
+
+    <div class="shell stand-pole p-hihat"></div>
+    <button class="pad cymbal p-hihat" data-sound="hihat" data-key="W">
+      <span class="key">W</span><span class="label">Chimbal</span>
+    </button>
+
+    <div class="shell drum-shell p-tom1"></div>
+    <button class="pad drum p-tom1" data-sound="tom1" data-key="E">
+      <span class="key">E</span><span class="label">Tom 1</span>
+    </button>
+
+    <div class="shell drum-shell p-tom1b"></div>
+    <button class="pad drum p-tom1b" data-sound="tom2" data-key="R">
+      <span class="key">R</span><span class="label">Tom 2</span>
+    </button>
+
+    <div class="shell stand-pole p-crashR"></div>
+    <button class="pad cymbal p-crashR" data-sound="crash2" data-key="T">
+      <span class="key">T</span><span class="label">Crash Dir.</span>
+    </button>
+
+    <div class="shell snare-shell p-snare"></div>
+    <button class="pad snare p-snare" data-sound="snare" data-key="A">
+      <span class="key">A</span><span class="label">Caixa</span>
+    </button>
+
+    <div class="shell drum-shell p-kick"></div>
+    <button class="pad drum p-kick" data-sound="kick" data-key="S">
+      <span class="key">S</span><span class="label">Bumbo</span>
+    </button>
+
+    <div class="shell drum-shell p-floor"></div>
+    <button class="pad drum p-floor" data-sound="floor" data-key="D">
+      <span class="key">D</span><span class="label">Tom de Chão</span>
+    </button>
+  </div>
+</main>
+
+<footer>feito para tocar sem compromisso</footer>
+
+<script>
+  // ---- Web Audio: sons de bateria sintetizados ----
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  const ctx = new AudioCtx();
+
+  const masterGain = ctx.createGain();
+  masterGain.gain.value = 0.8;
+  masterGain.connect(ctx.destination);
+
+  const volumeSlider = document.getElementById('volume');
+  volumeSlider.addEventListener('input', () => {
+    masterGain.gain.value = parseFloat(volumeSlider.value);
+  });
+
+  function rand(min, max){ return min + Math.random() * (max - min); }
+
+  function noiseBuffer(duration){
+    const bufferSize = ctx.sampleRate * duration;
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for(let i=0;i<bufferSize;i++){ data[i] = Math.random()*2-1; }
+    return buffer;
+  }
+
+  // ---- Cada som recebe variacao de tom (pitch) e volume (velocity) a cada toque ----
+  function playKick(v){
+    const startFreq = 150 * v.pitch;
+    const endFreq = 40 * v.pitch;
+    const dur = 0.4 * rand(0.9, 1.1);
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(startFreq, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(endFreq, ctx.currentTime + dur * 0.85);
+    gain.gain.setValueAtTime(1 * v.gain, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+    osc.connect(gain).connect(masterGain);
+    osc.start();
+    osc.stop(ctx.currentTime + dur);
+  }
+
+  function playSnare(v){
+    const dur = 0.2 * rand(0.85, 1.2);
+    const noise = ctx.createBufferSource();
+    noise.buffer = noiseBuffer(dur);
+    const noiseFilter = ctx.createBiquadFilter();
+    noiseFilter.type = 'highpass';
+    noiseFilter.frequency.value = 1000 * rand(0.85, 1.2);
+    const noiseGain = ctx.createGain();
+    noiseGain.gain.setValueAtTime(1 * v.gain, ctx.currentTime);
+    noiseGain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + dur);
+    noise.connect(noiseFilter).connect(noiseGain).connect(masterGain);
+
+    const osc = ctx.createOscillator();
+    osc.type = 'triangle';
+    osc.frequency.value = 180 * v.pitch;
+    const oscGain = ctx.createGain();
+    oscGain.gain.setValueAtTime(0.6 * v.gain, ctx.currentTime);
+    oscGain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + dur * 0.75);
+    osc.connect(oscGain).connect(masterGain);
+
+    noise.start(); osc.start();
+    noise.stop(ctx.currentTime + dur); osc.stop(ctx.currentTime + dur * 0.75);
+  }
+
+  function playHihat(v){
+    const dur = 0.08 * rand(0.8, 1.4);
+    const noise = ctx.createBufferSource();
+    noise.buffer = noiseBuffer(dur);
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'highpass';
+    filter.frequency.value = 7000 * rand(0.8, 1.25);
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.5 * v.gain, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + dur);
+    noise.connect(filter).connect(gain).connect(masterGain);
+    noise.start();
+    noise.stop(ctx.currentTime + dur);
+  }
+
+  function playCrash(v, baseDuration=0.9){
+    const dur = baseDuration * rand(0.75, 1.25);
+    const noise = ctx.createBufferSource();
+    noise.buffer = noiseBuffer(dur);
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.value = 6000 * rand(0.8, 1.25);
+    filter.Q.value = rand(0.4, 0.9);
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.6 * v.gain, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+    noise.connect(filter).connect(gain).connect(masterGain);
+    noise.start();
+    noise.stop(ctx.currentTime + dur);
+  }
+
+  function playTom(v, baseFreq){
+    const freq = baseFreq * v.pitch;
+    const dur = 0.35 * rand(0.9, 1.15);
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(freq*0.6, ctx.currentTime + dur * 0.85);
+    gain.gain.setValueAtTime(0.8 * v.gain, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+    osc.connect(gain).connect(masterGain);
+    osc.start();
+    osc.stop(ctx.currentTime + dur);
+  }
+
+  const sounds = {
+    kick:   (v) => playKick(v),
+    snare:  (v) => playSnare(v),
+    hihat:  (v) => playHihat(v),
+    crash:  (v) => playCrash(v, 0.9),
+    crash2: (v) => playCrash(v, 0.7),
+    tom1:   (v) => playTom(v, 300),
+    tom2:   (v) => playTom(v, 230),
+    floor:  (v) => playTom(v, 150),
+  };
+
+  // ---- Garante que o audio "destrava" no primeiro toque em qualquer lugar da tela (iOS/Safari) ----
+  function unlockAudio(){
+    if (ctx.state === 'suspended') ctx.resume();
+  }
+  document.addEventListener('pointerdown', unlockAudio, { once: true });
+  document.addEventListener('keydown', unlockAudio, { once: true });
+
+  // ---- Ligação dos pads (clique / toque / teclado), com variacao maior de tom e volume a cada toque ----
+  const pads = document.querySelectorAll('.pad');
+  const keyMap = {};
+
+  function hitPad(pad){
+    if (ctx.state === 'suspended') ctx.resume();
+    const variation = {
+      pitch: rand(0.82, 1.22),
+      gain: rand(0.7, 1.15)
+    };
+    sounds[pad.dataset.sound](variation);
+    pad.classList.add('active');
+    setTimeout(() => pad.classList.remove('active'), 140);
+  }
+
+  pads.forEach(pad => {
+    const key = pad.dataset.key.toLowerCase();
+    keyMap[key] = pad;
+
+    pad.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      hitPad(pad);
+    });
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.repeat) return;
+    const pad = keyMap[e.key.toLowerCase()];
+    if (pad) hitPad(pad);
+  });
+</script>
+
+</body>
+</html>
